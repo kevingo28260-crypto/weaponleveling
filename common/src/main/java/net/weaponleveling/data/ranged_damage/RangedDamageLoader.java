@@ -76,9 +76,9 @@ public class RangedDamageLoader extends SimpleJsonResourceReloadListener {
 
                             BuiltInRegistries.ITEM.getTag(itemTagKey).get().forEach((itemHolder) -> {
                                 Item item = itemHolder.value();
-                                if(jsonElementAsJsonObject.has("excludeTag")) {
-                                    String excludeNamespace = jsonElementAsJsonObject.get("excludeTag").getAsString().split(":")[0].replace("#","");
-                                    String excludeName = jsonElementAsJsonObject.get("excludeTag").getAsString().split(":")[1];
+                                if(jsonElementAsJsonObject.has("exclude_tag") || jsonElementAsJsonObject.has("excludeTag")) {
+                                    String excludeNamespace = jsonElementAsJsonObject.get(jsonElementAsJsonObject.has("exclude_tag") ? "exclude_tag" : "excludeTag").getAsString().split(":")[0].replace("#","");
+                                    String excludeName = jsonElementAsJsonObject.get(jsonElementAsJsonObject.has("exclude_tag") ? "exclude_tag" : "excludeTag").getAsString().split(":")[1];
                                     ResourceLocation excludeID = ResourceLocation.fromNamespaceAndPath(excludeNamespace,excludeName);
                                     TagKey<Item> excludeTagKey = TagKey.create(Registries.ITEM, excludeID);
                                     if(BuiltInRegistries.ITEM.getTag(excludeTagKey).isPresent() && item.getDefaultInstance().is(excludeTagKey)) return;
@@ -100,9 +100,9 @@ public class RangedDamageLoader extends SimpleJsonResourceReloadListener {
                         }
                         else if(BuiltInRegistries.ITEM.containsKey(id)){
                             Item item = BuiltInRegistries.ITEM.get(id);
-                            if(jsonElementAsJsonObject.has("excludeTag")) {
-                                String excludeNamespace = jsonElementAsJsonObject.get("excludeTag").getAsString().split(":")[0].replace("#","");
-                                String excludeName = jsonElementAsJsonObject.get("excludeTag").getAsString().split(":")[1];
+                            if(jsonElementAsJsonObject.has("exclude_tag") || jsonElementAsJsonObject.has("excludeTag")) {
+                                String excludeNamespace = jsonElementAsJsonObject.get(jsonElementAsJsonObject.has("exclude_tag") ? "exclude_tag" : "excludeTag").getAsString().split(":")[0].replace("#","");
+                                String excludeName = jsonElementAsJsonObject.get(jsonElementAsJsonObject.has("exclude_tag") ? "exclude_tag" : "excludeTag").getAsString().split(":")[1];
                                 ResourceLocation excludeID = ResourceLocation.fromNamespaceAndPath(excludeNamespace,excludeName);
                                 TagKey<Item> excludeTagKey = TagKey.create(Registries.ITEM, excludeID);
                                 if(BuiltInRegistries.ITEM.getTag(excludeTagKey).isPresent() && item.getDefaultInstance().is(excludeTagKey)) return;

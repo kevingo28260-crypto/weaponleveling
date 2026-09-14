@@ -1,3 +1,20 @@
+## Solunaris 1.21.1 private patch
+
+### Added
+- French translation in `fr_fr.json`.
+- A GitHub Actions build for the NeoForge jar.
+
+### Fixed
+- Item level is capped at the configured maximum.
+- Invalid or zero XP progression can no longer lock the server in a loop.
+- Exponential leveling functions now load correctly.
+- The default hit XP amount no longer uses the hit chance setting.
+- Player attacks no longer receive XP twice through the common and platform hooks.
+- Player death XP hooks are no longer registered twice.
+- Legacy item level and broken-item data keys remain readable while new data uses snake_case.
+- The missing Forge hoes whitelist tag was corrected.
+- Tooltip rendering is safe when no client player exists.
+
 # Changelog
 
 All notable changes to this project will be documented in this file.

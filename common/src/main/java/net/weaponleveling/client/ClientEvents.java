@@ -65,7 +65,7 @@ public class ClientEvents {
                     } else {
                         tooltip.add(Component.literal(" ▶ ").setStyle(ARROW)
                                 .append(Component.translatable("weaponleveling.tooltip.levelprogress").setStyle(TEXT))
-                                .append(Component.literal(String.format("%.2f", ((float)levelprogress) /((float)maxlevelprogress) * 100) +"%").setStyle(VALUES))
+                                .append(Component.literal(maxlevelprogress > 0 ? String.format("%.2f", ((float) levelprogress) / ((float) maxlevelprogress) * 100) + "%" : "0%").setStyle(VALUES))
                         );
                     }
                 } else if(level == ModUtils.getMaxLevel(stack)) {

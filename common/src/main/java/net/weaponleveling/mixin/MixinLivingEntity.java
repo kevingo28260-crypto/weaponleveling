@@ -3,6 +3,7 @@ package net.weaponleveling.mixin;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.*;
@@ -133,6 +134,8 @@ public abstract class MixinLivingEntity {
             at = @At(value = "INVOKE", target = "Lnet/minecraft/world/entity/LivingEntity;getDamageAfterArmorAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F"), locals = LocalCapture.CAPTURE_FAILEXCEPTION)
     private void injectedHurt(DamageSource source, float damageamount, CallbackInfo ci) {
         LivingEntity victim = ((LivingEntity) ((Object) this));
+        // Fabric and NeoForge use a dedicated Player.attack hook for critical-hit data.
+        if (source.is(DamageTypes.PLAYER_ATTACK)) return;
         LevelingLogic.updateForHit(victim, source, false, null);
     }
 

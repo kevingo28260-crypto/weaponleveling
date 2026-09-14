@@ -15,10 +15,8 @@
     "MixinAbstractArrow",
     "MixinItemStack",
     "MixinLivingEntity",
-    "MixinPlayer",
     "MixinProjectileWeaponItem",
     "MixinServerLevel",
-    "MixinServerPlayer",
     "MixinThrownTrident",
     "MixinTridentItem"
   ],

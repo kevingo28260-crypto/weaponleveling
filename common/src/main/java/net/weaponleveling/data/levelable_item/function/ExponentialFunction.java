@@ -38,7 +38,7 @@ public class ExponentialFunction extends LevelingFunction{
 
     @Override
     public MapCodec<? extends LevelingFunction> getCodec() {
-        return null;
+        return CODEC;
     }
 
     @Override

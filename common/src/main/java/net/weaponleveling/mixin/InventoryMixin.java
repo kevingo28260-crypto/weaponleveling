@@ -39,7 +39,8 @@ public abstract class InventoryMixin {
             ItemStack stack = this.armor.get(i);
             CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
             CompoundTag tag = customData != null ? customData.copyTag() : new CompoundTag();
-            if(tag.getBoolean("weaponleveling:isBroken")) {
+            if (tag.getBoolean("weaponleveling:is_broken") || tag.getBoolean("weaponleveling:isBroken")) {
+                tag.remove("weaponleveling:is_broken");
                 tag.remove("weaponleveling:isBroken");
                 stack.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));
                 ItemStack brokenItem = BrokenItem.of(stack);
@@ -55,7 +56,8 @@ public abstract class InventoryMixin {
             ItemStack stack = this.offhand.get(i);
             CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
             CompoundTag tag = customData != null ? customData.copyTag() : new CompoundTag();
-            if(tag.getBoolean("weaponleveling:isBroken")) {
+            if (tag.getBoolean("weaponleveling:is_broken") || tag.getBoolean("weaponleveling:isBroken")) {
+                tag.remove("weaponleveling:is_broken");
                 tag.remove("weaponleveling:isBroken");
                 stack.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));
                 ItemStack brokenItem = BrokenItem.of(stack);
@@ -74,7 +76,8 @@ public abstract class InventoryMixin {
                 ItemStack stack = this.compartments.get(i).get(j);
                 CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
                 CompoundTag tag = customData != null ? customData.copyTag() : new CompoundTag();
-                if(tag.getBoolean("weaponleveling:isBroken")) {
+                if (tag.getBoolean("weaponleveling:is_broken") || tag.getBoolean("weaponleveling:isBroken")) {
+                    tag.remove("weaponleveling:is_broken");
                     tag.remove("weaponleveling:isBroken");
                     stack.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));
                     ItemStack brokenItem = BrokenItem.of(stack);

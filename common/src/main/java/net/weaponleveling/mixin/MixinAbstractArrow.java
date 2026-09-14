@@ -27,14 +27,16 @@ public abstract class MixinAbstractArrow
     @Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
     private void injectWrite(CompoundTag nbt, CallbackInfo ci) {
         if (!sourceWeapon.isEmpty()) {
-            nbt.put("SourceWeapon", sourceWeapon.save(this.registryAccess(),new CompoundTag()));
+            nbt.put("source_weapon", sourceWeapon.save(this.registryAccess(), new CompoundTag()));
         }
     }
 
     @Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
     private void readNbt(CompoundTag tag, CallbackInfo ci) {
-        if (tag.contains("SourceWeapon")) {
-            sourceWeapon = ItemStack.parseOptional(this.registryAccess(),tag.getCompound("SourceWeapon"));
+        if (tag.contains("source_weapon")) {
+            sourceWeapon = ItemStack.parseOptional(this.registryAccess(), tag.getCompound("source_weapon"));
+        } else if (tag.contains("SourceWeapon")) {
+            sourceWeapon = ItemStack.parseOptional(this.registryAccess(), tag.getCompound("SourceWeapon"));
         }
     }
 

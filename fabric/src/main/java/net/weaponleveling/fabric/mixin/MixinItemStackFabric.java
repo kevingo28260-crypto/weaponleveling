@@ -48,7 +48,7 @@ public abstract class MixinItemStackFabric {
                 if(DataGetter.getBrokenItemsWontVanish() && ModUtils.shouldBeUnbreakable(stack)) {
                     CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
                     CompoundTag tag = customData != null ? customData.copyTag() : new CompoundTag();
-                    tag.putBoolean("weaponleveling:isBroken", true);
+                    tag.putBoolean("weaponleveling:is_broken", true);
                     stack.set(DataComponents.CUSTOM_DATA,CustomData.of(tag));
                     stack.setDamageValue(0);
                     serverLevel.playSound(null,

@@ -131,7 +131,7 @@ public class ModUtils {
         LevelableItem nbtLevelable = LevelableItem.fromNBT(stack);
         if (nbtLevelable != null) return nbtLevelable.hitXPAmount();
         else if (isJSONLevelable(stack)) return levelableitem.hitXPAmount();
-        else return WeaponLevelingConfig.hit_xp_chance;
+        else return WeaponLevelingConfig.hit_xp_amount;
     }
     public static int getHitXPChance(ItemStack stack) {
         LevelableItem levelableitem = LevelableItemsLoader.get(BuiltInRegistries.ITEM.getKey(stack.getItem()));

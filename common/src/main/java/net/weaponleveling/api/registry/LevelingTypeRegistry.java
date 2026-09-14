@@ -40,7 +40,12 @@ public class LevelingTypeRegistry {
 
 
     public static LevelingType getByID(ResourceLocation id) {
-        Class<? extends LevelingType> actionClass = TYPE_MAP.getOrDefault(id, null).getClass();
+        LevelingType registeredType = TYPE_MAP.get(id);
+        if (registeredType == null) {
+            return null;
+        }
+
+        Class<? extends LevelingType> actionClass = registeredType.getClass();
         try {
             return actionClass.getDeclaredConstructor().newInstance();
         } catch (Exception e) {

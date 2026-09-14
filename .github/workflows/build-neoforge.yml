@@ -1,0 +1,36 @@
+name: Build NeoForge Solunaris patch
+
+on:
+  push:
+    branches:
+      - fix/solunaris-1.21.1-fr-beta
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build NeoForge jar
+        run: chmod +x gradlew && ./gradlew :neoforge:build --no-daemon
+
+      - name: Upload NeoForge jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: weaponleveling-neoforge-solunaris
+          path: neoforge/build/libs/*-neoforge-*.jar
+          if-no-files-found: error

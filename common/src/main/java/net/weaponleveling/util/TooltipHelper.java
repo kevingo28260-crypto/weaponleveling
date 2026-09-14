@@ -76,6 +76,8 @@ public class TooltipHelper {
     }
 
     private static void replaceAttributeLines_BlueWithGreen(List<Component> tooltip) {
+        var player = Minecraft.getInstance().player;
+        if (player == null) return;
         var attributeTranslationKey = WLAttributes.RANGED_DAMAGE.getRegisteredName();
         for (int i = 0; i < tooltip.size(); i++)  {
             var line = tooltip.get(i);
@@ -88,7 +90,7 @@ public class TooltipHelper {
                         if (arg instanceof String string) {
                             try {
                                 var number = Double.valueOf(string);
-                                attributeValue = number + Minecraft.getInstance().player.getAttributeBaseValue(WLAttributes.RANGED_DAMAGE);
+                                attributeValue = number + player.getAttributeBaseValue(WLAttributes.RANGED_DAMAGE);
                             } catch (Exception ignored) { }
                         }
                         if (arg instanceof Component attributeText) {

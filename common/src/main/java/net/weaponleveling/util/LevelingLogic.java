@@ -30,11 +30,12 @@ import net.weaponleveling.data.mob_xp.MobXPLoader;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 @ApiStatus.Internal
 public class LevelingLogic {
     public static void applyHitXP(ItemStack stack, LivingEntity attacker, Entity target, Boolean critical) {
+        if (stack.isEmpty() || !ModUtils.isLevelableItem(stack)) return;
         if(target.getType().is(TagKey.create(Registries.ENTITY_TYPE, WeaponLevelingMod.id("entities_blacklist")))) return;
         if (attacker.level().isClientSide) {
             return;
@@ -69,42 +70,75 @@ public class LevelingLogic {
     }
 
     public static void updateProgressItem(LivingEntity attacker, ItemStack stack, int updateamount) {
-        if (attacker.level().isClientSide) {
+        if (attacker.level().isClientSide || stack.isEmpty()) {
             return;
         }
 
-        if(ItemLevelUpdateEvent.PRE.invoker().pre(attacker,stack,updateamount).isTrue()) return;
+        if (ItemLevelUpdateEvent.PRE.invoker().pre(attacker, stack, updateamount).isTrue()) return;
 
+        int configuredMaxLevel = Math.max(0, ModUtils.getMaxLevel(stack));
+        int storedLevel = LevelingAPI.getLevel(stack);
+        int currentlevel = Math.max(0, Math.min(storedLevel, configuredMaxLevel));
+        long currentprogress = Math.max(0L, LevelingAPI.getLevelProgress(stack));
 
-        int currentlevel = LevelingAPI.getLevel(stack);
-        long currentprogress = LevelingAPI.getLevelProgress(stack);
-        currentprogress += updateamount;
-        if (currentlevel < ModUtils.getMaxLevel(stack) ) {
+        if (storedLevel != currentlevel || currentlevel >= configuredMaxLevel) {
+            currentprogress = 0L;
+        }
+
+        if (updateamount > 0) {
+            long amount = updateamount;
+            currentprogress = currentprogress > Long.MAX_VALUE - amount
+                    ? Long.MAX_VALUE
+                    : currentprogress + amount;
+        }
+
+        if (currentlevel < configuredMaxLevel) {
             long maxprogress = LevelingAPI.getMaxProgress(currentlevel, stack);
-            if (currentprogress >= maxprogress) {
-
-                if(!ItemLevelUpdateEvent.LEVEL_UP.invoker().levelUp(attacker,stack,currentlevel,currentprogress,maxprogress).isFalse()) {
-                    while (currentprogress >= maxprogress) {
+            if (maxprogress <= 0L) {
+                WeaponLevelingMod.LOGGER.warn("Invalid XP progression for {}: calculated progress is {}",
+                        BuiltInRegistries.ITEM.getKey(stack.getItem()), maxprogress);
+                currentprogress = 0L;
+            } else if (currentprogress >= maxprogress) {
+                if (!ItemLevelUpdateEvent.LEVEL_UP.invoker()
+                        .levelUp(attacker, stack, currentlevel, currentprogress, maxprogress).isFalse()) {
+                    while (currentlevel < configuredMaxLevel && currentprogress >= maxprogress) {
                         currentprogress -= maxprogress;
                         currentlevel++;
-                        maxprogress = LevelingAPI.getMaxProgress(currentlevel, stack);
+
+                        if (currentlevel < configuredMaxLevel) {
+                            maxprogress = LevelingAPI.getMaxProgress(currentlevel, stack);
+                            if (maxprogress <= 0L) {
+                                WeaponLevelingMod.LOGGER.warn("Invalid XP progression for {}: calculated progress is {}",
+                                        BuiltInRegistries.ITEM.getKey(stack.getItem()), maxprogress);
+                                currentlevel = configuredMaxLevel;
+                                currentprogress = 0L;
+                                break;
+                            }
+                        }
                     }
 
-                    if(!ItemLevelUpdateEvent.SEND_NOTIFICATION.invoker().send(attacker,stack,currentlevel,currentprogress,maxprogress).isFalse()) {
-                        if(attacker instanceof Player player) {
+                    if (currentlevel >= configuredMaxLevel) {
+                        currentprogress = 0L;
+                    }
+
+                    long notificationMaxProgress = currentlevel < configuredMaxLevel
+                            ? LevelingAPI.getMaxProgress(currentlevel, stack)
+                            : 0L;
+                    if (!ItemLevelUpdateEvent.SEND_NOTIFICATION.invoker()
+                            .send(attacker, stack, currentlevel, currentprogress, notificationMaxProgress).isFalse()) {
+                        if (attacker instanceof Player player) {
                             sendLevelUpNotification(player, stack, currentlevel);
                         } else {
                             attacker.level().playSound(null, attacker.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.HOSTILE, 0.7F, 2.0f);
                         }
                     }
-
                 }
             }
-            LevelingAPI.updateLevel(stack,currentlevel);
-            LevelingAPI.updateLevelProgress(stack,currentprogress);
         }
-    }
 
+        LevelingAPI.updateLevel(stack, currentlevel);
+        LevelingAPI.updateLevelProgress(stack, currentprogress);
+    }
 
     private static int getXPForEntity(LivingEntity killed) {
 
@@ -153,9 +187,8 @@ public class LevelingLogic {
     }
 
     private static boolean shouldGiveXP(int probability) {
-        Random random = new Random();
-        double randomValue = random.nextDouble(1,100);
-        return randomValue <= probability;
+        int clampedProbability = Math.max(0, Math.min(probability, 100));
+        return ThreadLocalRandom.current().nextInt(100) < clampedProbability;
     }
 
     private static int armorXPAmount(int initialxp, boolean taxFree, ItemStack stack) {
@@ -183,8 +216,10 @@ public class LevelingLogic {
 
             int xpamount = LevelingLogic.getXPForEntity(victim);
 
-            if(specificStack != null) {
-                updateProgressItem(attacker, specificStack, xpamount);
+            if (specificStack != null) {
+                if (ModUtils.isLevelableItem(specificStack)) {
+                    updateProgressItem(attacker, specificStack, xpamount);
+                }
             } else if (source.is(DamageTypeTags.IS_PROJECTILE)) {
                 if(ModUtils.isRangedLeveling(stack)) {
                     updateProgressItem(attacker, stack, xpamount);
@@ -231,8 +266,10 @@ public class LevelingLogic {
             ChooseAttackItemEvent.EVENT.invoker().accept(event);
             ItemStack stack = event.itemStack;
 
-            if(specificStack != null) {
-                LevelingLogic.applyHitXP(specificStack, attacker, victim, crit);
+            if (specificStack != null) {
+                if (ModUtils.isLevelableItem(specificStack)) {
+                    LevelingLogic.applyHitXP(specificStack, attacker, victim, crit);
+                }
             } else if(source.is(DamageTypeTags.IS_PROJECTILE)) {
                 ItemStack mainhand = attacker.getMainHandItem();
                 ItemStack offhand = attacker.getOffhandItem();

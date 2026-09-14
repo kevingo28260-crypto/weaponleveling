@@ -30,7 +30,7 @@
       "required": false
     },
     {
-      "id": "#forge:tools/shovels",
+      "id": "#forge:tools/hoes",
       "required": false
     }
   ]
